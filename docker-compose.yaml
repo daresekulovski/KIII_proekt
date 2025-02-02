@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  petclinic:
+    image: darkosekulovski/petclinic:v1.0
+    container_name: petclinic_app
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres
+      SPRING_DATASOURCE_USERNAME: database
+      SPRING_DATASOURCE_PASSWORD: database123
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres
+    container_name: petclinic_db
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: database
+      POSTGRES_PASSWORD: database123
+    ports:
+      - "5432:5432"
+    volumes: 
+      - ./src/main/resources/db/postgres/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql:ro
+      - ./src/main/resources/db/postgres/data.sql:/docker-entrypoint-initdb.d/2-data.sql:rw
+      - /home/darko/tmp:/var/lib/postgressql/data
+
+volumes:
+  postgrest_db:
