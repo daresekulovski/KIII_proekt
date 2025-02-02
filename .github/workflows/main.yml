@@ -1,0 +1,43 @@
+name: check code and build
+
+on:
+ push:
+  branches: ["master"]
+jobs:
+ lint:
+  runs-on: ubuntu:latest
+  steps:
+   - name: Fetch code
+     uses: actions/checkout@v3
+     
+   - name: Run lint and check code
+     uses: github/super-linter@v4
+     env:
+      VALIDATE_ALL_CODEBASE: false
+      DEFAULT_BRANCH: "main"
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+ docker:
+  runs-on: ubuntu-latest
+  needs: lint
+  steps:
+   - name: Fetch code again
+     uses: actions/checkout@v3
+
+   - name: Set QEMU
+     uses: docker/setip-qemu-action@v3
+
+   - name: Set Docker Buildx
+     uses: docker/setup-buildx-action@v3
+
+   - name: Login DockerHub
+     uses: docker/login-action@v3
+     with:
+      username: ${{ secrets.DOCKERHUB_USERNAME }}
+      password: ${{ secrets.DOCKERHUB_TOKEN }}
+      
+   - name: Build and push image
+     uses: docker/build-push-action@v5
+     with:
+      context: .
+      push: true
+      tags: darkosekulovski/petclinic:latest
